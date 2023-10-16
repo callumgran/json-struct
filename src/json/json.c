@@ -426,3 +426,73 @@ char *json_to_string(JsonObject *json)
 
 	return string;
 }
+
+bool json_get_bool(JsonObject *obj, const char *key)
+{
+	for (size_t i = 0; i < obj->length; i++) {
+		JsonElement elem = obj->elements[i];
+		if (elem.value->type == JSON_TYPE_BOOLEAN) {
+			if (strcmp(elem.key, key) == 0) {
+				return elem.value->value.boolean;
+			}
+		}
+	}
+
+	return false;
+}
+
+JsonNum json_get_number(JsonObject *obj, const char *key)
+{
+	for (size_t i = 0; i < obj->length; i++) {
+		JsonElement elem = obj->elements[i];
+		if (elem.value->type == JSON_TYPE_NUMBER) {
+			if (strcmp(elem.key, key) == 0) {
+				return elem.value->value.number;
+			}
+		}
+	}
+
+	return 0.0;
+}
+
+JsonStr json_get_string(JsonObject *obj, const char *key)
+{
+	for (size_t i = 0; i < obj->length; i++) {
+		JsonElement elem = obj->elements[i];
+		if (elem.value->type == JSON_TYPE_STRING) {
+			if (strcmp(elem.key, key) == 0) {
+				return elem.value->value.string;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+JsonArray *json_get_array(JsonObject *obj, const char *key)
+{
+	for (size_t i = 0; i < obj->length; i++) {
+		JsonElement elem = obj->elements[i];
+		if (elem.value->type == JSON_TYPE_ARRAY) {
+			if (strcmp(elem.key, key) == 0) {
+				return elem.value->value.array;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+JsonObject *json_get_object(JsonObject *obj, const char *key)
+{
+	for (size_t i = 0; i < obj->length; i++) {
+		JsonElement elem = obj->elements[i];
+		if (elem.value->type == JSON_TYPE_OBJECT) {
+			if (strcmp(elem.key, key) == 0) {
+				return elem.value->value.object;
+			}
+		}
+	}
+
+	return NULL;
+}

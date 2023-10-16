@@ -24,6 +24,8 @@
 
 /* MAGIC MACROS JUST DON'T LOOK */
 
+#define VA_NUMBER_OF_ARGS(...) (sizeof((int[]){ __VA_ARGS__ }) / sizeof(int))
+
 #define EVAL0(...) __VA_ARGS__
 #define EVAL1(...) EVAL0(EVAL0(EVAL0(__VA_ARGS__)))
 #define EVAL2(...) EVAL1(EVAL1(EVAL1(__VA_ARGS__)))
@@ -42,6 +44,13 @@
 #define MAP_POP_TWO_ARGS1(F, X, Y, ...) F(X, Y) __VA_OPT__(MAP_POP_TWO_ARGS0 NOP(F, __VA_ARGS__))
 
 #define MAP_TWO_ARGS(F, ...) __VA_OPT__(EVAL(MAP_POP_TWO_ARGS0(F, __VA_ARGS__)))
+
+#define MAP_POP_THREE_ARGS0(F, X, Y, Z, ...) \
+	F(X, Y, Z) __VA_OPT__(MAP_POP_THREE_ARGS1 NOP(F, __VA_ARGS__))
+#define MAP_POP_THREE_ARGS1(F, X, Y, Z, ...) \
+	F(X, Y, Z) __VA_OPT__(MAP_POP_THREE_ARGS0 NOP(F, __VA_ARGS__))
+
+#define MAP_THREE_ARGS(F, ...) __VA_OPT__(EVAL(MAP_POP_THREE_ARGS0(F, __VA_ARGS__)))
 
 #define NORMALIZE(X) NORMALIZE_##X
 

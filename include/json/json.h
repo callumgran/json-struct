@@ -27,13 +27,29 @@ typedef char *JsonStr;
 typedef double JsonNum;
 typedef bool JsonBool;
 
+typedef struct {
+	JsonStr *array;
+	size_t length;
+} JsonStrArray;
+
+typedef struct {
+	JsonNum *array;
+	size_t length;
+} JsonNumArray;
+
+typedef struct {
+	JsonBool *array;
+	size_t length;
+} JsonBoolArray;
+
 typedef enum JsonType {
 	JSON_TYPE_NULL,
 	JSON_TYPE_BOOLEAN,
 	JSON_TYPE_NUMBER,
 	JSON_TYPE_STRING,
 	JSON_TYPE_ARRAY,
-	JSON_TYPE_OBJECT
+	JSON_TYPE_OBJECT,
+	JSON_TYPE_COUNT
 } JsonType;
 
 typedef struct JsonValue {
@@ -69,5 +85,15 @@ void json_free(JsonObject *json);
 void json_print(JsonObject *json);
 
 char *json_to_string(JsonObject *json);
+
+bool json_get_bool(JsonObject *json, const char *key);
+
+JsonNum json_get_number(JsonObject *json, const char *key);
+
+JsonStr json_get_string(JsonObject *json, const char *key);
+
+JsonArray *json_get_array(JsonObject *json, const char *key);
+
+JsonObject *json_get_object(JsonObject *json, const char *key);
 
 #endif // JSON_H

@@ -7,7 +7,9 @@
 
 // Example usage:
 
-JSON_STRUCT_INIT(Person, JsonNum, age, JsonStr, name);
+JSON_STRUCT_INIT(Contact, JsonStr, type, JsonStr, value);
+
+JSON_STRUCT_INIT(Person, JsonNum, age, JsonStr, name, JsonStrArray, hobbies, Contact, contact);
 
 int main()
 {
@@ -42,7 +44,7 @@ int main()
 					   "}"
 					   "],"
 					   "\"hobbies\": [\"reading\", \"traveling\", \"photography\"],"
-					   "\"isStudent\": false"
+					   "\"isStudent\": true"
 					   "}";
 
 	JsonObject *json_object = json_parse(json);
@@ -53,24 +55,42 @@ int main()
 
 	printf("json string: %s\n", json_string);
 
+	bool is_student = json_get_bool(json_object, "isStudent");
+
+	printf("is student: %s\n", is_student ? "true" : "false");
+
 	free(json_string);
 
 	json_free(json_object);
 
-	const char *json_data = "{ \"age\": 30, \"name\": \"John\" }";
+	const char *json_data = 
+	"{"
+    "\"age\": 30,"
+	"\"name\": \"John Doe\","
+    "\"hobbies\": [\"Reading\", \"Hiking\", \"Cooking\"],"
+    "\"contact\": {"
+        "\"type\": \"email\","
+        "\"value\": \"johndoe@example.com\""
+    "}"
+	"}";
+
 
 	json_object = json_parse(json_data);
 
-	Person person;
-	person.age = 0.0;
-	person.name = malloc(sizeof(char) * 10);
+	Person *person = map_json_to_Person(json_object);
 
-	map_json_to_Person(json_object, &person);
+	printf("age: %f\n", person->age);
+	printf("name: %s\n", person->name);
+	printf("hobbies: ");
+	for (size_t i = 0; i < person->hobbies.length; i++) {
+		printf("%s, ", person->hobbies.array[i]);
+	}
+	printf("\n");
+	printf("contact type: %s\n", person->contact.type);
+	printf("contact value: %s\n", person->contact.value);
+	
 
-	printf("age: %f\n", person.age);
-	printf("name: %s\n", person.name);
-
-	JsonObject *result = map_Person_to_json(&person);
+	JsonObject *result = map_Person_to_json(person);
 
 	printf("result:");
 	json_print(result);
