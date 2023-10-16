@@ -26,14 +26,146 @@ JSON-Struct-Mapper is a lightweight C library that enables the seamless mapping 
 
 The library provides macros for initializing JSON mappable structs:
 
+Simply initialize a JSON mappable struct using the `JSON_STRUCT_INIT` macro:
+
 ```c
-#define JSON_STRUCT_INIT(struct_type, ...)     \
-    typedef struct {                           \
-        MAP_TWO_ARGS(STRUCT_LINE, __VA_ARGS__) \
-    } struct_type;                             \
-    MAP_JSON_TO_STRUCT(struct_type, __VA_ARGS__) \
-    MAP_STRUCT_TO_JSON(struct_type, __VA_ARGS__) 
+JSON_STRUCT_INIT(Contact, JsonStr, type, JsonStr, value);
+
+JSON_STRUCT_INIT(Person, JsonNum, age, JsonStr, name, JsonStrArray, hobbies, ContactArray, contacts);
 ```
+
+This creates the equivalent of the following C structs:
+
+```c
+typedef struct {
+    JsonStr type;
+    JsonStr value;
+} Contact;
+
+typedef struct {
+    size_t length;
+    Contact *array;
+} ContactArray;
+
+typedef struct {
+    JsonNum age;
+    JsonStr name;
+    JsonStrArray hobbies;
+    ContactArray contacts;
+} Person;
+
+typedef struct {
+    size_t length;
+    Person *array;
+} PersonArray;
+
+```
+And generates the following functions for mapping to and from JSON:
+
+```c
+Contact *map_json_to_Contact(JsonObject *json_object)
+{
+	Contact *dest_struct = malloc(sizeof(Contact));
+	for (size_t i = 0; i < json_object->length; i++) {
+		if (strcmp(json_object->elements[i].key, "type") == 0) {
+			map_json_to_JsonStr_internal(json_object->elements[i].value, &dest_struct->type);
+		}
+	}
+	for (size_t i = 0; i < json_object->length; i++) {
+		if (strcmp(json_object->elements[i].key, "value") == 0) {
+			map_json_to_JsonStr_internal(json_object->elements[i].value, &dest_struct->value);
+		}
+	}
+	return dest_struct;
+}
+
+JsonObject *map_Contact_to_json(Contact *src_struct)
+{
+	JsonObject *json_object = malloc(sizeof(JsonObject));
+	json_object->length = 0;
+	json_object->elements = malloc(1);
+	json_object->elements =
+		realloc(json_object->elements, sizeof(JsonElement) * (json_object->length + 1));
+	json_object->elements[json_object->length].key = malloc(strlen("type") + 1);
+	strncpy(json_object->elements[json_object->length].key, "type", strlen("type") + 1);
+	json_object->elements[json_object->length].value =
+		map_JsonStr_to_json_internal(&src_struct->type);
+	json_object->length++;
+	json_object->elements =
+		realloc(json_object->elements, sizeof(JsonElement) * (json_object->length + 1));
+	json_object->elements[json_object->length].key = malloc(strlen("value") + 1);
+	strncpy(json_object->elements[json_object->length].key, "value", strlen("value") + 1);
+	json_object->elements[json_object->length].value =
+		map_JsonStr_to_json_internal(&src_struct->value);
+	json_object->length++;
+	return json_object;
+}
+
+Person *map_json_to_Person(JsonObject *json_object)
+{
+	Person *dest_struct = malloc(sizeof(Person));
+	for (size_t i = 0; i < json_object->length; i++) {
+		if (strcmp(json_object->elements[i].key, "age") == 0) {
+			map_json_to_JsonNum_internal(json_object->elements[i].value, &dest_struct->age);
+		}
+	}
+	for (size_t i = 0; i < json_object->length; i++) {
+		if (strcmp(json_object->elements[i].key, "name") == 0) {
+			map_json_to_JsonStr_internal(json_object->elements[i].value, &dest_struct->name);
+		}
+	}
+	for (size_t i = 0; i < json_object->length; i++) {
+		if (strcmp(json_object->elements[i].key, "hobbies") == 0) {
+			map_json_to_JsonStrArray_internal(json_object->elements[i].value,
+											  &dest_struct->hobbies);
+		}
+	}
+	for (size_t i = 0; i < json_object->length; i++) {
+		if (strcmp(json_object->elements[i].key, "contacts") == 0) {
+			map_json_to_ContactArray_internal(json_object->elements[i].value,
+											  &dest_struct->contacts);
+		}
+	}
+	return dest_struct;
+}
+
+JsonObject *map_Person_to_json(Person *src_struct)
+{
+	JsonObject *json_object = malloc(sizeof(JsonObject));
+	json_object->length = 0;
+	json_object->elements = malloc(1);
+	json_object->elements =
+		realloc(json_object->elements, sizeof(JsonElement) * (json_object->length + 1));
+	json_object->elements[json_object->length].key = malloc(strlen("age") + 1);
+	strncpy(json_object->elements[json_object->length].key, "age", strlen("age") + 1);
+	json_object->elements[json_object->length].value =
+		map_JsonNum_to_json_internal(&src_struct->age);
+	json_object->length++;
+	json_object->elements =
+		realloc(json_object->elements, sizeof(JsonElement) * (json_object->length + 1));
+	json_object->elements[json_object->length].key = malloc(strlen("name") + 1);
+	strncpy(json_object->elements[json_object->length].key, "name", strlen("name") + 1);
+	json_object->elements[json_object->length].value =
+		map_JsonStr_to_json_internal(&src_struct->name);
+	json_object->length++;
+	json_object->elements =
+		realloc(json_object->elements, sizeof(JsonElement) * (json_object->length + 1));
+	json_object->elements[json_object->length].key = malloc(strlen("hobbies") + 1);
+	strncpy(json_object->elements[json_object->length].key, "hobbies", strlen("hobbies") + 1);
+	json_object->elements[json_object->length].value =
+		map_JsonStrArray_to_json_internal(&src_struct->hobbies);
+	json_object->length++;
+	json_object->elements =
+		realloc(json_object->elements, sizeof(JsonElement) * (json_object->length + 1));
+	json_object->elements[json_object->length].key = malloc(strlen("contacts") + 1);
+	strncpy(json_object->elements[json_object->length].key, "contacts", strlen("contacts") + 1);
+	json_object->elements[json_object->length].value =
+		map_ContactArray_to_json_internal(&src_struct->contacts);
+	json_object->length++;
+	return json_object;
+}
+```
+
 These macros allow you to create C structs that mirror the structure of your JSON data, and automatically generate functions for mapping to and from JSON.
 ## Supported Data Types
 
@@ -42,8 +174,9 @@ JSON-Struct-Mapper supports the following data types for mapping:
     String
     Number
     Boolean
-    Array (work in progress)
-    Object (work in progress)
+    Array
+    Object
+    Array of JsonStructs
 
 The library is designed to make it easy to work with JSON data in C applications while adhering to JSON data types.
 ## Usage
@@ -59,7 +192,3 @@ The library is designed to make it easy to work with JSON data in C applications
 ## Getting Started
 
 To get started, check out the example code and documentation in the project's repository. The provided examples and documentation will help you quickly integrate JSON-Struct-Mapper into your C project.
-
-## Contributing
-
-Contributions and bug reports are welcome! Feel free to open issues or submit pull requests on the project's GitHub repository.

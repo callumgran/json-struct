@@ -9,7 +9,8 @@
 
 JSON_STRUCT_INIT(Contact, JsonStr, type, JsonStr, value);
 
-JSON_STRUCT_INIT(Person, JsonNum, age, JsonStr, name, JsonStrArray, hobbies, ContactArray, contacts);
+JSON_STRUCT_INIT(Person, JsonNum, age, JsonStr, name, JsonStrArray, hobbies, ContactArray,
+				 contacts);
 
 int main()
 {

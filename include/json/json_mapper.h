@@ -49,15 +49,13 @@ JsonValue *map_JsonNumArray_to_json_internal(JsonNumArray *src);
 
 JsonValue *map_JsonBoolArray_to_json_internal(JsonBoolArray *src);
 
-#define MAP_JSON_ELEMENT_TO_STRUCT(struct_member_type, struct_member)                       \
-	do {                                                                                    \
-		for (size_t i = 0; i < json_object->length; i++) {                                  \
-			if (strcmp(json_object->elements[i].key, #struct_member) == 0) {                \
-				map_json_to_##struct_member_type##_internal(json_object->elements[i].value, \
-															&dest_struct->struct_member);   \
-			}                                                                               \
-		}                                                                                   \
-	} while (0);
+#define MAP_JSON_ELEMENT_TO_STRUCT(struct_member_type, struct_member)                   \
+	for (size_t i = 0; i < json_object->length; i++) {                                  \
+		if (strcmp(json_object->elements[i].key, #struct_member) == 0) {                \
+			map_json_to_##struct_member_type##_internal(json_object->elements[i].value, \
+														&dest_struct->struct_member);   \
+		}                                                                               \
+	}
 
 #define STRUCT_LINE(type, val) type val;
 
@@ -76,17 +74,15 @@ JsonValue *map_JsonBoolArray_to_json_internal(JsonBoolArray *src);
 		MAP_TWO_ARGS(MAP_JSON_ELEMENT_TO_STRUCT, __VA_ARGS__)                                \
 	}
 
-#define MAP_STRUCT_ELEMENT_TO_JSON(struct_member_type, struct_member)                        \
-	do {                                                                                     \
-		json_object->elements =                                                              \
-			realloc(json_object->elements, sizeof(JsonElement) * (json_object->length + 1)); \
-		json_object->elements[json_object->length].key = malloc(strlen(#struct_member) + 1); \
-		strncpy(json_object->elements[json_object->length].key, #struct_member,              \
-				strlen(#struct_member) + 1);                                                 \
-		json_object->elements[json_object->length].value =                                   \
-			map_##struct_member_type##_to_json_internal(&src_struct->struct_member);         \
-		json_object->length++;                                                               \
-	} while (0);
+#define MAP_STRUCT_ELEMENT_TO_JSON(struct_member_type, struct_member)                    \
+	json_object->elements =                                                              \
+		realloc(json_object->elements, sizeof(JsonElement) * (json_object->length + 1)); \
+	json_object->elements[json_object->length].key = malloc(strlen(#struct_member) + 1); \
+	strncpy(json_object->elements[json_object->length].key, #struct_member,              \
+			strlen(#struct_member) + 1);                                                 \
+	json_object->elements[json_object->length].value =                                   \
+		map_##struct_member_type##_to_json_internal(&src_struct->struct_member);         \
+	json_object->length++;
 
 #define MAP_STRUCT_TO_JSON(struct_type, ...)                         \
 	JsonObject *map_##struct_type##_to_json(struct_type *src_struct) \
@@ -125,28 +121,28 @@ JsonValue *map_JsonBoolArray_to_json_internal(JsonBoolArray *src);
 		return dest;                                                                             \
 	}
 
-#define MAP_JSON_ARRAY_TO_STRUCT_INTERNAL(struct_type, ...)                              \
-	void map_json_to_##struct_type##Array_internal(JsonValue *val, struct_type##Array *dest)         \
-	{                                                                                    \
-		dest->length = val->value.array->length;                                         \
-		dest->array = malloc(sizeof(struct_type) * val->value.array->length);               \
-		for (size_t i = 0; i < val->value.array->length; i++) {                          \
+#define MAP_JSON_ARRAY_TO_STRUCT_INTERNAL(struct_type, ...)                                     \
+	void map_json_to_##struct_type##Array_internal(JsonValue *val, struct_type##Array *dest)    \
+	{                                                                                           \
+		dest->length = val->value.array->length;                                                \
+		dest->array = malloc(sizeof(struct_type) * val->value.array->length);                   \
+		for (size_t i = 0; i < val->value.array->length; i++) {                                 \
 			map_json_to_##struct_type##_internal(val->value.array->values[i], dest->array + i); \
-		}                                                                                \
+		}                                                                                       \
 	}
 
-#define JSON_STRUCT_INIT(struct_type, ...)                \
-	typedef struct {                                      \
-		MAP_TWO_ARGS(STRUCT_LINE, __VA_ARGS__)            \
-	} struct_type;                                        \
-	typedef struct {                                      \
-		size_t length;                                    \
-		struct_type *array;                               \
-	} struct_type##Array;                                 \
-	MAP_JSON_TO_STRUCT(struct_type, __VA_ARGS__)          \
-	MAP_STRUCT_TO_JSON(struct_type, __VA_ARGS__)          \
-	MAP_JSON_TO_STRUCT_INTERNAL(struct_type, __VA_ARGS__) \
-	MAP_STRUCT_TO_JSON_INTERNAL(struct_type, __VA_ARGS__) \
+#define JSON_STRUCT_INIT(struct_type, ...)                      \
+	typedef struct {                                            \
+		MAP_TWO_ARGS(STRUCT_LINE, __VA_ARGS__)                  \
+	} struct_type;                                              \
+	typedef struct {                                            \
+		size_t length;                                          \
+		struct_type *array;                                     \
+	} struct_type##Array;                                       \
+	MAP_JSON_TO_STRUCT(struct_type, __VA_ARGS__)                \
+	MAP_STRUCT_TO_JSON(struct_type, __VA_ARGS__)                \
+	MAP_JSON_TO_STRUCT_INTERNAL(struct_type, __VA_ARGS__)       \
+	MAP_STRUCT_TO_JSON_INTERNAL(struct_type, __VA_ARGS__)       \
 	MAP_STRUCT_ARRAY_TO_JSON_INTERNAL(struct_type, __VA_ARGS__) \
 	MAP_JSON_ARRAY_TO_STRUCT_INTERNAL(struct_type, __VA_ARGS__)
 
