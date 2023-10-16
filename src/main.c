@@ -9,7 +9,7 @@
 
 JSON_STRUCT_INIT(Contact, JsonStr, type, JsonStr, value);
 
-JSON_STRUCT_INIT(Person, JsonNum, age, JsonStr, name, JsonStrArray, hobbies, Contact, contact);
+JSON_STRUCT_INIT(Person, JsonNum, age, JsonStr, name, JsonStrArray, hobbies, ContactArray, contacts);
 
 int main()
 {
@@ -63,16 +63,21 @@ int main()
 
 	json_free(json_object);
 
-	const char *json_data = 
-	"{"
-    "\"age\": 30,"
-	"\"name\": \"John Doe\","
-    "\"hobbies\": [\"Reading\", \"Hiking\", \"Cooking\"],"
-    "\"contact\": {"
-        "\"type\": \"email\","
-        "\"value\": \"johndoe@example.com\""
-    "}"
-	"}";
+	const char *json_data = "{"
+							"\"age\": 30,"
+							"\"name\": \"John Doe\","
+							"\"hobbies\": [\"Reading\", \"Hiking\", \"Cooking\"],"
+							"\"contacts\": ["
+							"{"
+							"\"type\": \"email\","
+							"\"value\": \"johndoe@example.com\""
+							"},"
+							"{"
+							"\"type\": \"phone\","
+							"\"value\": \"12345678\""
+							"}"
+							"]"
+							"}";
 
 
 	json_object = json_parse(json_data);
@@ -86,9 +91,7 @@ int main()
 		printf("%s, ", person->hobbies.array[i]);
 	}
 	printf("\n");
-	printf("contact type: %s\n", person->contact.type);
-	printf("contact value: %s\n", person->contact.value);
-	
+	printf("contact: %s, %s\n", person->contacts.array->type, person->contacts.array->value);
 
 	JsonObject *result = map_Person_to_json(person);
 
